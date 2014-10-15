@@ -15,7 +15,7 @@ setup(
     data_files=[("share/qmpc/images", ["data/background.png"]),
                 ("share/applications/hildon", ["data/qmpc.desktop"]),
                 ("share/icons/hicolor/64x64/apps", ["data/qmpc.png"]),
-            ]
+            ],
     scripts=["qmpc"],
     keywords=["mpd"],
 )

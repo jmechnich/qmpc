@@ -65,12 +65,16 @@ class Playlist(QWidget):
         
     def contextMenu(self,pos):
         if self.model.rowCount() == 0: return
-        mi = self.view.indexAt(pos)
+        mi = self.view.selectionModel().currentIndex()
+        if not mi.isValid(): return
+
         popup = QMenu()
         actionDelete  = popup.addAction("Delete")
         actionDetails = popup.addAction("Details")
         actionClear   = popup.addAction("Clear")
+        actionSave    = popup.addAction("Save Playlist")
         action=popup.exec_(pos)
+        
         if action == actionDelete:
             ans = QMessageBox.question(
                 self, "Remove Selected Song", "Are you sure?",
@@ -90,6 +94,11 @@ class Playlist(QWidget):
             if ans == QMessageBox.Yes:
                 self.mpd.clear()
                 self.updateStatus()
+        elif action == actionSave:
+            ans, ok = QInputDialog.getText(
+                self, "Save playlist", "Save as:")
+            if ok:
+                self.mpd.save(unicode(ans))
     
     def showDetails(self,index):
         info = self.mpd.playlistid(
@@ -199,7 +208,7 @@ class Playlist(QWidget):
                             selectPos = pos
                             break
             if selectPos != -1:
-                print "Selecting row", selectPos
+                #print "Selecting row", selectPos
                 QTimer.singleShot(
                     0, lambda: self.view.setCurrentIndex(
                         self.model.index(selectPos,self.col.id)))

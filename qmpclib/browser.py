@@ -2,6 +2,8 @@ from PyQt4.Qt import *
 
 import mpd
 
+from util import ClickableLabel
+
 class Browser(QWidget):
     entrytype = type("EntryType", (object,), dict((v,k) for k,v in enumerate(
         ["directory", "playlist", "mediafile", "url"]
@@ -21,24 +23,26 @@ class Browser(QWidget):
         self.mpd = mpd
         self.model = QStandardItemModel(0,self.columns(),self)
         self.initGUI()
+        self.initActions()
 
     def initGUI(self):
         self.setWindowTitle(QApplication.applicationName())
         layout = QVBoxLayout()
 
         headerlayout = QHBoxLayout()
-        backBtn = QToolButton()
-        backBtn.setIcon(QIcon.fromTheme("general_backspace"))
-        backBtn.setFixedSize(64,64)
-        backBtn.clicked.connect(self.back)
-        headerlayout.addWidget(backBtn)
+        homeBtn = QToolButton()
+        homeBtn.setIcon(QIcon.fromTheme("general_backspace"))
+        homeBtn.setFixedSize(64,64)
+        homeBtn.clicked.connect(self.home)
+        headerlayout.addWidget(homeBtn)
         label = QLabel("<b>Location</b>")
         label.setMargin(10)
         label.setFixedSize(label.sizeHint())
         headerlayout.addWidget(label)
-        self.currentLocation = QLabel("")
+        self.currentLocation = ClickableLabel("")
         self.currentLocation.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.currentLocation.setWordWrap(True)
+        self.currentLocation.clicked.connect(self.back)
         headerlayout.addWidget(self.currentLocation)
         layout.addLayout(headerlayout)
 
@@ -53,48 +57,74 @@ class Browser(QWidget):
         self.view.activated.connect(self.activated)
         layout.addWidget(self.view)
         self.setLayout(layout)
+
+    def initActions(self):
+        self.actionAdd         = QAction("Add", self)
+        self.actionAddPlay     = QAction("Add and Play", self)
+        self.actionInsert      = QAction("Insert", self)
+        self.actionReplace     = QAction("Replace", self)
+        self.actionReplacePlay = QAction("Replace and Play", self)
+        self.actionUpdate      = QAction("Update", self)
+        # playlist actions
+        self.actionPlsDelete   = QAction("Delete", self)
+            
         
     def contextMenu(self,pos):
         if self.model.rowCount() == 0: return
         mi = self.view.selectionModel().currentIndex()
         if not mi.isValid(): return
         uri = self.model.item(mi.row(),self.col.uri).text()
-        popup = QMenu()
-        actionAdd         = popup.addAction("Add")
-        actionAddPlay     = popup.addAction("Add and Play")
-        actionInsert      = popup.addAction("Insert")
-        actionReplace     = popup.addAction("Replace")
-        actionReplacePlay = popup.addAction("Replace and Play")
-        actionUpdate      = popup.addAction("Update")
         entrytype = int(self.model.item(mi.row(),self.col.entrytype).text())
-        if not (entrytype == self.entrytype.mediafile or
-                entrytype == self.entrytype.url):
-            actionInsert.setEnabled(False)
+
+        addfunc = None
+        if entrytype != self.entrytype.playlist:
+            addfunc = self.mpd.add
+        else:
+            addfunc = self.mpd.load
+        
+        popup = QMenu()
+        popup.addAction(self.actionAdd)
+        popup.addAction(self.actionAddPlay)
+        if entrytype == self.entrytype.mediafile or \
+           entrytype == self.entrytype.url:
+            popup.addAction(self.actionInsert)
+        popup.addAction(self.actionReplace)
+        popup.addAction(self.actionReplacePlay)
+        if entrytype == self.entrytype.playlist:
+            popup.addAction(self.actionPlsDelete)
+        else:
+            popup.addAction(self.actionUpdate)
         action = popup.exec_(pos)
-        try:
-            status = self.mpd.status()
-            if action == actionAdd:
-                self.mpd.add(uri)
-            if action == actionAddPlay:
-                self.mpd.add(uri)
-                self.mpd.play(int(status['playlistlength']))
-            elif action == actionInsert:
-                song = int(status.get('song',-1))+1
-                self.mpd.addid(uri,song)
-            elif action == actionReplace:
-                self.mpd.clear()
-                self.mpd.add(uri)
-            elif action == actionReplacePlay:
-                self.mpd.clear()
-                self.mpd.add(uri)
-                self.mpd.play()
-            elif action == actionUpdate:
-                ans = QMessageBox.question(
-                    self, "Update", "Trigger update for '%s'?" % uri,
-                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-                if ans == QMessageBox.Yes:
-                    self.mpd.update(uri)
-        except: pass
+        
+        status = self.mpd.status()
+        if action == self.actionAdd:
+            addfunc(uri)
+        elif action == self.actionAddPlay:
+            addfunc(uri)
+            self.mpd.play(int(status['playlistlength']))
+        elif action == self.actionInsert:
+            song = int(status.get('song',-1))+1
+            self.mpd.addid(uri,song)
+        elif action == self.actionReplace:
+            self.mpd.clear()
+            addfunc(uri)
+        elif action == self.actionReplacePlay:
+            self.mpd.clear()
+            addfunc(uri)
+            self.mpd.play()
+        elif action == self.actionUpdate:
+            ans = QMessageBox.question(
+                self, "Update", "Trigger update for '%s'?" % uri,
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if ans == QMessageBox.Yes:
+                self.mpd.update(uri)
+        elif action == self.actionPlsDelete:
+            ans = QMessageBox.question(
+                self, "Delete '%s'" % uri, "Are you sure?" % uri,
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if ans == QMessageBox.Yes:
+                self.mpd.rm(uri)
+                self.home()
          
     def showDirectory(self,uri):
         try:
