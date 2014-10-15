@@ -188,14 +188,17 @@ class Widget(QWidget):
             name, address, port = selected
             try:
                 if not reconnect:
+                    self.connectButton.setText("Connecting...")
                     QMaemo5InformationBox.information(
                         self, "Connecting to <b>%s</b>" % name,
                         QMaemo5InformationBox.DefaultTimeout)
+                    QApplication.processEvents()
                 self.mpd.connect( str(address), int(port))
                 if not reconnect:
                     QMaemo5InformationBox.information(
                         self, "Connected to <b>%s</b>" % name,
                         QMaemo5InformationBox.DefaultTimeout)
+                    QApplication.processEvents()
                     self.setActionsEnabled(True)
                     self.player.show()
                 self.mpdtimer = self.startTimer(5000)
@@ -205,12 +208,14 @@ class Widget(QWidget):
                 QMaemo5InformationBox.information(
                         self, "%s: %s" %(name,e[1]),
                         QMaemo5InformationBox.DefaultTimeout)
+                QApplication.processEvents()
             except socket.error, e:
                 self.setActionsEnabled(False)
                 self.showStartScreen()
                 QMaemo5InformationBox.information(
                         self, "%s: %s" %(name,e[1]),
                         QMaemo5InformationBox.DefaultTimeout)
+                QApplication.processEvents()
 
     def disconnectMPD(self, reconnect=False):
         self.killTimer(self.mpdtimer)
@@ -220,6 +225,7 @@ class Widget(QWidget):
             if len(selected): message += (" from <b>%s</b>" % selected[0])
             QMaemo5InformationBox.information(
                 self, message, QMaemo5InformationBox.DefaultTimeout)
+            QApplication.processEvents()
             self.setActionsEnabled(False)
             self.showStartScreen()
             self.player.reset()

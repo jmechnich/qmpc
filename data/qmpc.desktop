@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Name=qmpc
+X-Text-Domain=mediaplayer
+Exec=qmpc
+Icon=qmpc
+X-HildonDesk-ShowInToolbar=true
+X-Osso-Type=application/x-executable

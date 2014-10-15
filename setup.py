@@ -12,7 +12,10 @@ setup(
     url="https://github.com/jmechnich/qmpc",
     download_url="https://github.com/jmechnich/qmpc/releases",
     packages=["qmpclib"],
-    data_files=[("share/qmpc", ["images/background.png"])],
-    scripts=['qmpc'],
+    data_files=[("share/qmpc/images", ["data/background.png"]),
+                ("share/applications/hildon", ["data/qmpc.desktop"]),
+                ("share/icons/hicolor/64x64/apps", ["data/qmpc.png"]),
+            ]
+    scripts=["qmpc"],
     keywords=["mpd"],
 )

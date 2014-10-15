@@ -1,5 +1,7 @@
 from PyQt4.Qt import *
 
+import mpd
+
 class Browser(QWidget):
     entrytype = type("EntryType", (object,), dict((v,k) for k,v in enumerate(
         ["directory", "playlist", "mediafile", "url"]
@@ -94,15 +96,18 @@ class Browser(QWidget):
                     self.mpd.update(uri)
         except: pass
          
-    def showDirectory(self):
-        uri = unicode(self.currentLocation.text())
-        try:    info = self.mpd.lsinfo(uri)
-        except: return
+    def showDirectory(self,uri):
+        try:
+            info = self.mpd.lsinfo(uri)
+        except mpd.MPDError, e:
+            print e
+            return
         rows = []
         for entry in info:
             row = self.createRow(entry)
             if not row: continue
             rows += [row]
+        self.currentLocation.setText(uri)
         self.updateModel(rows)
     
     def createRow(self,entry):
@@ -143,15 +148,13 @@ class Browser(QWidget):
         return row
         
     def updateModel(self,rows):
-        if not len(rows): return
         self.model.clear()
         for row in rows:
             self.model.appendRow([QStandardItem(i) for i in  row])
             
     def showEvent(self, ev):
         if self.model.rowCount() == 0:
-            self.currentLocation.setText("")
-            self.showDirectory()
+            self.home()
         super(Browser,self).showEvent(ev)
     
     def hideEvent(self,ev):
@@ -164,40 +167,41 @@ class Browser(QWidget):
             uri = uri[:pos]
         elif len(uri):
             uri = ''
-        self.currentLocation.setText(uri)
-        self.showDirectory()
+        self.showDirectory(uri)
 
     def home(self):
-        self.currentLocation.setText('')
-        self.showDirectory()
+        self.showDirectory("")
 
-    def showPlaylist(self):
-        uri = unicode(self.currentLocation.text())
+    def showPlaylist(self,uri):
         try:    info = self.mpd.listplaylistinfo(uri)
-        except: return
+        except mpd.MPDError, e:
+            print e
+            return
         rows = []
         for entry in info:
             row = self.createRow(entry)
             if not row: continue
             rows += [row]
+        self.currentLocation.setText(uri)
         self.updateModel(rows)
 
     def activated(self,index):
         entrytype = int(self.model.item(index.row(),self.col.entrytype).text())
         if entrytype == self.entrytype.directory:
             uri = unicode(self.currentLocation.text())
-            self.currentLocation.setText( '/'.join([uri, unicode(index.data())])
-                                          if len(uri) else unicode(index.data()))
-            self.showDirectory()
+            uri = '/'.join([uri, unicode(index.data())]) \
+                  if len(uri) else unicode(index.data())
+            self.showDirectory(uri)
         elif entrytype == self.entrytype.playlist:
             uri = self.model.item(index.row(),self.col.uri).text()
-            self.currentLocation.setText(uri)
-            self.showPlaylist()
+            self.showPlaylist(uri)
         elif entrytype == self.entrytype.mediafile or \
              entrytype == self.entrytype.url:
             uri = self.model.item(index.row(),self.col.uri).text()
-            try:    self.mpd.add(uri)
-            except: pass
+            try:
+                self.mpd.add(uri)
+            except mpd.MPDError, e:
+                print e
             
     def reset(self):
         self.hide()

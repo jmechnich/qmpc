@@ -21,13 +21,13 @@ Screenshots
 ===========
 
 #### Start screen
-![](https://raw.github.com/jmechnich/qmpc/master/images/Screenshot-20141015-112123.png)
+![](https://raw.github.com/jmechnich/qmpc/master/screens/Screenshot-20141015-112123.png)
 
 #### Playback window
-![](https://raw.github.com/jmechnich/qmpc/master/images/Screenshot-20141014-114538.png)
+![](https://raw.github.com/jmechnich/qmpc/master/screens/Screenshot-20141014-114538.png)
 
 #### Playlist
-![](https://raw.github.com/jmechnich/qmpc/master/images/Screenshot-20141014-115009.png)
+![](https://raw.github.com/jmechnich/qmpc/master/screens/Screenshot-20141014-115009.png)
 
 #### Library browser
-![](https://raw.github.com/jmechnich/qmpc/master/images/Screenshot-20141014-114407.png)
+![](https://raw.github.com/jmechnich/qmpc/master/screens/Screenshot-20141014-114407.png)

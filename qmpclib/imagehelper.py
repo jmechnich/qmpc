@@ -59,17 +59,23 @@ class ImageHelper(object):
             return ''
         s = QSettings()
         if s.contains('datadir'):
-            datadir   = s.value('datadir')
+            datadir   = unicode(s.value('datadir'))
             imagepath = os.path.join(datadir,name)
             if os.path.exists(imagepath):
                 return imagepath
         else:
-            datadirsuffix = os.path.join('share',unicode(QApplication.applicationName()))
+            dirname = os.path.dirname(name)
+            datadirsuffix = os.path.join(
+                'share',unicode(QApplication.applicationName()))
+            dirpath = os.path.normpath(os.path.join(datadirsuffix,dirname))
             for root, dirs, files in os.walk('/usr', None, True):
-                if not root.endswith(datadirsuffix): continue
-                for d in dirs:
-                    for f in files:
-                        if os.path.join(d,f) == name:
-                            s.setValue('datadir',root)
-                            return os.path.join(root,name)
+                if not root.endswith(dirpath): continue
+                for f in files:
+                    filepath = os.path.join(root,f)
+                    if filepath.endswith(name):
+                        pos = filepath.find(name)
+                        if pos == -1: continue
+                        datadir = os.path.normpath(root[:pos])
+                        s.setValue('datadir',datadir)
+                        return filepath
         return ''
