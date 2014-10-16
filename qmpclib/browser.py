@@ -66,6 +66,7 @@ class Browser(QWidget):
         self.actionReplacePlay = QAction("Replace and Play", self)
         self.actionUpdate      = QAction("Update", self)
         # playlist actions
+        self.actionPlsRename   = QAction("Rename", self)
         self.actionPlsDelete   = QAction("Delete", self)
             
         
@@ -91,6 +92,7 @@ class Browser(QWidget):
         popup.addAction(self.actionReplace)
         popup.addAction(self.actionReplacePlay)
         if entrytype == self.entrytype.playlist:
+            popup.addAction(self.actionPlsRename)
             popup.addAction(self.actionPlsDelete)
         else:
             popup.addAction(self.actionUpdate)
@@ -118,6 +120,24 @@ class Browser(QWidget):
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if ans == QMessageBox.Yes:
                 self.mpd.update(uri)
+        elif action == self.actionPlsRename:
+            ans, ok = QInputDialog.getText(
+                self, "Rename playlist", "Rename playlist '%s':" % uri)
+            plsname = unicode(ans)
+            if ok and plsname != uri:
+                for pls in self.mpd.listplaylists():
+                    if pls['playlist'] == plsname:
+                        overwrite = QMessageBox.question(
+                            self, "Rename playlist",
+                            "Playlist exists, overwrite?",
+                            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                        if overwrite == QMessageBox.Yes:
+                            self.mpd.rm(plsname)
+                            self.mpd.rename(uri,plsname)
+                        break
+                else:
+                    self.mpd.rename(uri, plsname)
+                    self.home()
         elif action == self.actionPlsDelete:
             ans = QMessageBox.question(
                 self, "Delete '%s'" % uri, "Are you sure?" % uri,
@@ -181,6 +201,7 @@ class Browser(QWidget):
         self.model.clear()
         for row in rows:
             self.model.appendRow([QStandardItem(i) for i in  row])
+        self.view.scrollToTop()
             
     def showEvent(self, ev):
         if self.model.rowCount() == 0:

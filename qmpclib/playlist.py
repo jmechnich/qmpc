@@ -98,7 +98,19 @@ class Playlist(QWidget):
             ans, ok = QInputDialog.getText(
                 self, "Save playlist", "Save as:")
             if ok:
-                self.mpd.save(unicode(ans))
+                plsname = unicode(ans)
+                for pls in self.mpd.listplaylists():
+                    if pls['playlist'] == plsname:
+                        overwrite = QMessageBox.question(
+                            self, "Save playlist",
+                            "Playlist exists, overwrite?",
+                            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                        if overwrite == QMessageBox.Yes:
+                            self.mpd.rm(plsname)
+                            self.mpd.save(plsname)
+                        break
+                else:
+                    self.mpd.save(plsname)
     
     def showDetails(self,index):
         info = self.mpd.playlistid(
