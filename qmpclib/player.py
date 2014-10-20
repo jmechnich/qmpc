@@ -3,10 +3,10 @@ from PyQt4.Qt import *
 import mpd, socket
 
 class Player(QWidget):
-    def __init__(self,mpd,parent):
-        super(Player,self).__init__(parent)
-        self.mpd   = mpd
-        self.ih    = parent.imagehelper
+    def __init__(self,app):
+        super(Player,self).__init__()
+        self.mpd   = app.mpd
+        self.ih    = app.imagehelper
         self.timer = None
         self.initGUI()
         self.initState()

@@ -21,9 +21,9 @@ class Playlist(QWidget):
         return len(dict((k,v) for k,v in Playlist.col.__dict__.items()
                         if not k.startswith("__")))
 
-    def __init__(self,mpd,parent=None):
-        super(Playlist,self).__init__(parent)
-        self.mpd = mpd
+    def __init__(self,app):
+        super(Playlist,self).__init__()
+        self.mpd = app.mpd
         self.model = QStandardItemModel(0,self.columns(),self)
         self.initState()
         self.initGUI()

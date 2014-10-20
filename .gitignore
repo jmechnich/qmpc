@@ -1,5 +1,7 @@
 /build
+/files.txt
 *.pyo
 *.pyc
 *~
-/files.txt
+\#*
+.#*

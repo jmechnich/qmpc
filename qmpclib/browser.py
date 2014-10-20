@@ -18,9 +18,9 @@ class Browser(QWidget):
                         if not k.startswith("__")))
 
 
-    def __init__(self,mpd,parent=None):
-        super(Browser,self).__init__(parent)
-        self.mpd = mpd
+    def __init__(self,app):
+        super(Browser,self).__init__()
+        self.mpd = app.mpd
         self.model = QStandardItemModel(0,self.columns(),self)
         self.initGUI()
         self.initActions()

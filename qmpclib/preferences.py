@@ -180,7 +180,6 @@ class Prefs(QDialog):
         if len(selectedList):
             self.serverSel.setCurrentIndex( selectedList[0].row())
         self.serverBtn = ValueButton("Server")
-        self.serverBtn.setValueLayout(ValueButton.ValueUnderText)
         self.serverBtn.setPickSelector(self.serverSel)
         self.autoconnect = QCheckBox("Autoconnect")
         self.autoconnect.setChecked(self.data.autoconnect)
