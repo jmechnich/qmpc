@@ -120,6 +120,7 @@ class QMPCApp(QObject):
             self.menuwindows = self.menu.addMenu("&Windows")
             mw.statusBar()
             mw.show()
+            mw.setFixedSize(mw.sizeHint())
             self.appwid = mw
        
         # create all menu bars
