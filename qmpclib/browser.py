@@ -1,7 +1,9 @@
-from PyQt4.Qt import *
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui  import QWidget, QStandardItemModel, QApplication, \
+    QVBoxLayout, QHBoxLayout, QToolButton, QLabel, QListView, \
+    QAbstractItemView, QAction, QStandardItem
 
-import mpd
-
+from mpd  import MPDError
 from util import ClickableLabel
 
 class Browser(QWidget):
@@ -21,6 +23,7 @@ class Browser(QWidget):
     def __init__(self,app):
         super(Browser,self).__init__()
         self.mpd = app.mpd
+        self.ih  = app.imagehelper
         self.model = QStandardItemModel(0,self.columns(),self)
         self.initGUI()
         self.initActions()
@@ -31,7 +34,7 @@ class Browser(QWidget):
 
         headerlayout = QHBoxLayout()
         homeBtn = QToolButton()
-        homeBtn.setIcon(QIcon.fromTheme("general_backspace"))
+        homeBtn.setIcon(self.ih.homeButton)
         homeBtn.setFixedSize(64,64)
         homeBtn.clicked.connect(self.home)
         headerlayout.addWidget(homeBtn)
@@ -96,7 +99,7 @@ class Browser(QWidget):
             popup.addAction(self.actionPlsDelete)
         else:
             popup.addAction(self.actionUpdate)
-        action = popup.exec_(pos)
+        action = popup.exec_(self.mapToGlobal(pos))
         
         status = self.mpd.status()
         if action == self.actionAdd:
@@ -149,7 +152,7 @@ class Browser(QWidget):
     def showDirectory(self,uri):
         try:
             info = self.mpd.lsinfo(uri)
-        except mpd.MPDError, e:
+        except MPDError, e:
             print e
             return
         rows = []
@@ -225,7 +228,7 @@ class Browser(QWidget):
 
     def showPlaylist(self,uri):
         try:    info = self.mpd.listplaylistinfo(uri)
-        except mpd.MPDError, e:
+        except MPDError, e:
             print e
             return
         rows = []
@@ -251,7 +254,7 @@ class Browser(QWidget):
             uri = self.model.item(index.row(),self.col.uri).text()
             try:
                 self.mpd.add(uri)
-            except mpd.MPDError, e:
+            except MPDError, e:
                 print e
             
     def reset(self):

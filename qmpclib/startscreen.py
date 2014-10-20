@@ -1,11 +1,14 @@
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui  import QWidget, QVBoxLayout, QApplication, QPalette, QBrush
-from qmpclib.util import ClickableLabel
+from PyQt4.QtGui  import QWidget, QVBoxLayout, QApplication, QPalette, QBrush, \
+    QPainter
+
+from util import ClickableLabel
 
 class StartScreen(QWidget):
     def __init__(self, app):
         super(QWidget,self).__init__()
         self.app = app
+        self.bg = app.imagehelper.background
         self.initGUI()
 
     def sizeHint(self):
@@ -16,7 +19,7 @@ class StartScreen(QWidget):
         
         # set background image
         p = self.palette()
-        p.setBrush(QPalette.Background, QBrush(self.app.imagehelper.background))
+        p.setBrush(QPalette.Background, QBrush(self.bg))
         self.setPalette(p)
         
         layout = QVBoxLayout()
@@ -37,3 +40,8 @@ class StartScreen(QWidget):
                                        selected[0])
         else:
             self.connectButton.setText("Press <b>HERE</b> to connect")
+
+    def paintEvent(self,ev):
+        p = QPainter(self)
+        p.drawPixmap(0,0,self.bg)
+        p.end()

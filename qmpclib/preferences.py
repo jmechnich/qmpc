@@ -1,10 +1,13 @@
-from PyQt4.Qt import *
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui  import QDialog, QCheckBox, QHBoxLayout, QVBoxLayout, \
+    QDialogButtonBox, QAbstractItemView, QItemSelectionModel, QGridLayout, \
+    QLineEdit, QStandardItem
 
-from qmpclib.widgetwrapper import *
+from widgetwrapper import *
 
 class AddServerDialog(QDialog):
-    def __init__(self,name="",address="",port=6600):
-        super(AddServerDialog,self).__init__()
+    def __init__(self,parent=None,name="",address="",port=6600):
+        super(AddServerDialog,self).__init__(parent)
         self.setWindowTitle("Add Server")
         layout = QHBoxLayout()
         srvlayout = QGridLayout()
@@ -61,8 +64,7 @@ class ServerPickSelector(ListPickSelector):
     
     def widget(self,parent):
         td = ListPickerDialog(self, parent)
-        if isinstance(parent,QAbstractButton):
-            td.setWindowTitle(parent.text())
+        td.setWindowTitle("Select Server")
         td.setAttribute(Qt.WA_DeleteOnClose)
         layout = QHBoxLayout();
         layout.setContentsMargins(16, 0, 16, 8)
@@ -70,6 +72,7 @@ class ServerPickSelector(ListPickSelector):
         view = self.view()
         if not view:
             listView = QListView()
+            listView.setEditTriggers( QAbstractItemView.NoEditTriggers)
             listView.setModel(self.model())
             listView.setModelColumn(self.modelColumn())
             if listView.sizeHintForRow(0)>0:
@@ -108,7 +111,7 @@ class ServerPickSelector(ListPickSelector):
         
 
     def addServer(self):
-        d = AddServerDialog()
+        d = AddServerDialog(self.view())
         ret = d.exec_()
         if ret[0] != QDialog.Accepted: return
         name, address, port = ret[1:]
@@ -149,7 +152,8 @@ class ServerPickSelector(ListPickSelector):
         oldname, oldaddress, oldport = [
             model.item(mi.row(),col).text()
             for col in xrange(model.columnCount()) ]
-        d = AddServerDialog(oldname, oldaddress, oldport)
+        d = AddServerDialog(self.view(),oldname, oldaddress, oldport)
+        d.setWindowTitle("Edit Server")
         ret = d.exec_()
         if ret[0] == QDialog.Accepted:
             name, address, port = ret[1:]

@@ -2,15 +2,15 @@ from PyQt4.QtCore import Qt, QObject, QTimer, pyqtSignal
 from PyQt4.QtGui  import QMenuBar, QMainWindow, QStackedWidget, QAction, \
     QApplication, QDialog, QGridLayout, QLabel
 
-from qmpclib.startscreen   import StartScreen
-from qmpclib.player        import Player
-from qmpclib.browser       import Browser
-from qmpclib.playlist      import Playlist
-from qmpclib.mpdwrapper    import MPDWrapper
-from qmpclib.preferences   import Prefs
-from qmpclib.imagehelper   import ImageHelper
-from qmpclib.util          import DataModel
-from qmpclib.widgetwrapper import InformationBox
+from startscreen   import StartScreen
+from player        import Player
+from browser       import Browser
+from playlist      import Playlist
+from mpdwrapper    import MPDWrapper
+from preferences   import Prefs
+from imagehelper   import ImageHelper
+from util          import DataModel
+from widgetwrapper import InformationBox
 
 import socket
 
@@ -34,6 +34,7 @@ class QMPCApp(QObject):
     }
     
     __icons__  = {
+        'homeButton':           "general_backspace",
         'volumeButton':         "general_speaker",
         'settingsButton':       "keyboard_menu",
         'prevButton':           "/etc/hildon/theme/mediaplayer/Back.png",
@@ -117,6 +118,7 @@ class QMPCApp(QObject):
             self.menu = mw.menuBar()
             self.menufile = self.menu.addMenu("&File")
             self.menuwindows = self.menu.addMenu("&Windows")
+            mw.statusBar()
             mw.show()
             self.appwid = mw
        

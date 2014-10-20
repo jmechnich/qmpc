@@ -1,3 +1,6 @@
+import sip
+sip.setapi('QVariant', 2)
+
 from PyQt4.Qt     import pyqtSignal
 from PyQt4.QtCore import Qt, QSettings
 from PyQt4.QtGui  import QLabel, QFrame, QStandardItem, QStandardItemModel
@@ -28,8 +31,8 @@ class DataModel(object):
         if servers:
             for s in servers:
                 self.servers.appendRow([QStandardItem(str(i)) for i in s])
-        self.selected    = str(settings.value("selected", self.selected))
-        self.autoconnect = bool(settings.value("autoconnect", self.autoconnect))
+        self.selected    =  str(settings.value("selected",    self.selected))
+        self.autoconnect = int(settings.value("autoconnect", self.autoconnect))
         
     def saveSettings(self):
         settings = QSettings()
@@ -44,8 +47,8 @@ class DataModel(object):
             settings.setValue("servers", servers)
         else:
             settings.setValue("servers", None)
-        settings.setValue("selected", str(self.selected))
-        settings.setValue("autoconnect", bool(self.autoconnect))
+        settings.setValue("selected",     str(self.selected))
+        settings.setValue("autoconnect", int(self.autoconnect))
 
     def selectedServer(self):
         selectedServer = []

@@ -1,6 +1,10 @@
-from PyQt4.Qt import *
+from PyQt4.QtCore import Qt, QTimer
+from PyQt4.QtGui  import QStyledItemDelegate, QWidget, QStandardItemModel, \
+    QApplication, QVBoxLayout, QTableView, QHeaderView, QAbstractItemView, \
+    QFontMetrics, QStandardItem, QPalette
 
-import mpd, socket
+from mpd import ConnectionError
+import socket
 
 class NowPlayingDelegate(QStyledItemDelegate):
     def __init__(self,parent=None):
@@ -73,7 +77,7 @@ class Playlist(QWidget):
         actionDetails = popup.addAction("Details")
         actionClear   = popup.addAction("Clear")
         actionSave    = popup.addAction("Save Playlist")
-        action=popup.exec_(pos)
+        action=popup.exec_(self.mapToGlobal(pos))
         
         if action == actionDelete:
             ans = QMessageBox.question(
@@ -165,7 +169,7 @@ class Playlist(QWidget):
         try:
             self.updateCounter = (self.updateCounter+1)%5
             self.updateStatus(self.updateCounter==0)
-        except mpd.ConnectionError, e:
+        except ConnectionError, e:
             self.hide()
             QMaemo5InformationBox.information(
                 self, "Connection Error: %s" % str(e),

@@ -1,4 +1,8 @@
-from PyQt4.Qt import *
+import sip
+sip.setapi('QVariant', 2)
+
+from PyQt4.QtCore import QSettings
+from PyQt4.QtGui  import QPixmap, QIcon, QApplication
 
 import os
 
@@ -44,6 +48,15 @@ class ImageHelper(object):
         # try Qt icon theme
         icon = QIcon.fromTheme(uri)
         if not icon.isNull(): return icon
+
+        if os.path.isabs(uri):
+            path = os.path.join('icons',os.path.basename(uri))
+            if os.path.exists(path): return QIcon(path)
+        else:
+            path = os.path.join('icons',uri)
+            ext = os.path.splitext(path)[1]
+            if not len(ext): path += '.png'
+            if os.path.exists(path): return QIcon(path)
         
         # print warning and return empty icon
         print "Icon not found:", name

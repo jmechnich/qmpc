@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-import signal, sip, sys
+import signal, sys
+
+import sip
 sip.setapi('QVariant', 2)
 
 from PyQt4.QtGui import QApplication
@@ -11,6 +13,7 @@ def main():
     a = QApplication(sys.argv)
     a.setApplicationName("qmpc")
     a.setOrganizationName("mechnich")
+    a.setStyleSheet("QStatusBar, QStatusBar *, QMenuBar,ClickableLabel { background-color: black; color: white }")
     q = QMPCApp()
     return a.exec_()
 

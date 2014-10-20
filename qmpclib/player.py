@@ -1,6 +1,10 @@
-from PyQt4.Qt import *
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui  import QWidget, QApplication, QFontMetrics, QFont, \
+    QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QSlider, QMenu, \
+    QToolButton, QStackedWidget, QIcon
 
-import mpd, socket
+from mpd import ConnectionError
+import socket
 
 class Player(QWidget):
     def __init__(self,app):
@@ -122,7 +126,7 @@ class Player(QWidget):
     def showAdditionalControls(self):
         pos = self.settingsBtn.pos()
         pos.setY( pos.y()-self.settingsWidget.sizeHint().height())
-        self.settingsWidget.popup( pos)
+        self.settingsWidget.popup( self.mapToGlobal(pos))
 
     def createCheckButton(self, offIcon, onIcon):
         i = QIcon()
@@ -244,7 +248,7 @@ class Player(QWidget):
     def timerEvent(self,ev):
         try:
             self.updateStatus()
-        except mpd.ConnectionError, e:
+        except ConnectionError, e:
             self.hide()
             QMaemo5InformationBox.information(
                 self, "Connection Error: %s" % str(e),
