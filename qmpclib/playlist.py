@@ -1,7 +1,8 @@
 from PyQt4.QtCore import Qt, QTimer
 from PyQt4.QtGui  import QStyledItemDelegate, QWidget, QStandardItemModel, \
     QApplication, QVBoxLayout, QTableView, QHeaderView, QAbstractItemView, \
-    QFontMetrics, QStandardItem, QPalette, QMenu
+    QFontMetrics, QStandardItem, QPalette, QMenu, QMessageBox, QDialog, \
+    QGridLayout, QLabel, QInputDialog
 
 from mpd import ConnectionError
 import socket

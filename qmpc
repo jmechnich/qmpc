@@ -14,7 +14,7 @@ def main():
     a.setApplicationName("qmpc")
     a.setOrganizationName("mechnich")
     if not have_maemo:
-        a.setStyleSheet("QStatusBar, QStatusBar *, QMenuBar,ClickableLabel" +
+        a.setStyleSheet("QStatusBar, QStatusBar *, QMenuBar, StartScreen *" +
                         "{ background-color: black; color: white }")
     q = QMPCApp()
     return a.exec_()

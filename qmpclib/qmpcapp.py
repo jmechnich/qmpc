@@ -1,4 +1,4 @@
-from PyQt4.QtCore import Qt, QObject, QTimer, pyqtSignal
+from PyQt4.QtCore import Qt, QObject, QTimer
 from PyQt4.QtGui  import QMenuBar, QMainWindow, QStackedWidget, QAction, \
     QApplication, QDialog, QGridLayout, QLabel
 
@@ -20,8 +20,6 @@ else:
 import socket
 
 class QMPCApp(QObject):
-    connectionStatusChanged = pyqtSignal(bool)
-
     __images__ = {
         'background':           "images/background.png",
     }
@@ -69,7 +67,12 @@ class QMPCApp(QObject):
         self.playlist    = Playlist(self)
         self.browser     = Browser(self)
 
+        self.startscreen.clicked.connect(self.connectActivated)
+
         # create actions
+        self.actionStart = QAction("Start Screen", self)
+        self.actionStart.triggered.connect(
+            lambda: self.showWidget(self.startscreen))
         self.actionPlayer = QAction("Player", self)
         self.actionPlayer.triggered.connect(
             lambda: self.showWidget(self.player))
@@ -118,6 +121,8 @@ class QMPCApp(QObject):
             self.appwid = mw
        
         # create all menu bars
+        if not have_maemo:
+            self.menuwindows.addAction(self.actionStart)
         self.menuwindows.addAction(self.actionPlayer)
         self.menuwindows.addAction(self.actionPlaylist)
         self.menuwindows.addAction(self.actionBrowser)
@@ -125,7 +130,6 @@ class QMPCApp(QObject):
         self.menufile.addAction(self.actionConnect)
         self.menuwindows.addAction("Preferences", self.showPrefs)
         self.setActionsEnabled(False)
-
         if not have_maemo:
             self.menufile.addSeparator()
             self.menufile.addAction("&Quit", QApplication.quit)
@@ -223,13 +227,13 @@ class QMPCApp(QObject):
         self.actionPlaylist.setEnabled(state)
         self.actionBrowser.setEnabled(state)
         self.actionStats.setEnabled(state)
+        self.startscreen.updateLabel(state)
         if state:
             selected = self.data.selectedServer()
             if not len(selected): return
             self.actionConnect.setText("Disconnect")
         else:
             self.actionConnect.setText("Connect")
-        self.connectionStatusChanged.emit(state)
     
     def showPrefs(self):
         s = Prefs(self.data, self.appwid)

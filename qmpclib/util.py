@@ -15,7 +15,11 @@ class ClickableLabel(QLabel):
         self.setAlignment(Qt.AlignCenter)
 
     def mousePressEvent(self,ev):
+        self.setFrameShadow(QFrame.Sunken)
         self.clicked.emit()
+        
+    def mouseReleaseEvent(self,ev):
+        self.setFrameShadow(QFrame.Raised)
 
 class DataModel(object):
     def __init__(self):

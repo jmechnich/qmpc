@@ -1,7 +1,7 @@
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui  import QWidget, QStandardItemModel, QApplication, \
     QVBoxLayout, QHBoxLayout, QToolButton, QLabel, QListView, \
-    QAbstractItemView, QAction, QStandardItem, QMenu
+    QAbstractItemView, QAction, QStandardItem, QMenu, QPushButton
 
 from mpd  import MPDError
 from util import ClickableLabel
@@ -45,8 +45,10 @@ class Browser(QWidget):
         self.currentLocation = ClickableLabel("")
         self.currentLocation.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.currentLocation.setWordWrap(True)
+        self.currentLocation.setFixedSize(400,64)
         self.currentLocation.clicked.connect(self.back)
         headerlayout.addWidget(self.currentLocation)
+        headerlayout.addStretch()
         layout.addLayout(headerlayout)
 
         self.view = QListView()

@@ -1,10 +1,10 @@
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import Qt, pyqtSignal
 from PyQt4.QtGui  import QWidget, QVBoxLayout, QApplication, QPalette, QBrush, \
-    QPainter
-
-from util import ClickableLabel
+    QPainter, QLabel
 
 class StartScreen(QWidget):
+    clicked = pyqtSignal()
+    
     def __init__(self, app):
         super(QWidget,self).__init__()
         self.app = app
@@ -25,23 +25,22 @@ class StartScreen(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(0,0,0,50)
         layout.addStretch(1)
-        self.connectButton = ClickableLabel()
-        self.connectButton.setMinimumWidth( 300)
-        self.connectButton.clicked.connect(self.app.connectActivated)
-        self.app.connectionStatusChanged.connect(self.updateConnectButton)
-        self.updateConnectButton(False)
-        layout.addWidget( self.connectButton, 0, Qt.AlignCenter)
+        self.label = QLabel()
+        self.updateLabel(False)
+        layout.addWidget( self.label, 0, Qt.AlignCenter)
         self.setLayout(layout)
         
-    def updateConnectButton(self,state):
+    def updateLabel(self,state):
         if state:
             selected = self.app.data.selectedServer()
-            self.connectButton.setText("Connected to <b>%s</b>" %
-                                       selected[0])
+            self.label.setText("Connected to <b>%s</b>" % selected[0])
         else:
-            self.connectButton.setText("Press <b>HERE</b> to connect")
+            self.label.setText("Click to connect")
 
     def paintEvent(self,ev):
         p = QPainter(self)
         p.drawPixmap(0,0,self.bg)
         p.end()
+    
+    def mousePressEvent(self,ev):
+        self.clicked.emit()
