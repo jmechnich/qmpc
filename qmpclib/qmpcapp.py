@@ -10,21 +10,14 @@ from mpdwrapper    import MPDWrapper
 from preferences   import Prefs
 from imagehelper   import ImageHelper
 from util          import DataModel
-from widgetwrapper import InformationBox
+from platformhelper import have_maemo
+
+if have_maemo:
+    from widgets_maemo   import InformationBox
+else:
+    from widgets_default import InformationBox
 
 import socket
-
-HAVE_MAEMO = False
-def checkForMaemo():
-    import os
-    if not os.path.exists('/etc/issue'):
-        return
-    issue = open('/etc/issue').read().strip().lower()
-    if issue.startswith('maemo'):
-        global HAVE_MAEMO
-        HAVE_MAEMO = True
-checkForMaemo()
-del checkForMaemo
 
 class QMPCApp(QObject):
     connectionStatusChanged = pyqtSignal(bool)
@@ -94,7 +87,8 @@ class QMPCApp(QObject):
         self.menu = None
         self.menufile = None
         self.menuwindows = None
-        if HAVE_MAEMO:
+        
+        if have_maemo:
             self.player.setParent(self.startscreen)
             self.playlist.setParent(self.player)
             self.browser.setParent(self.player)
@@ -131,13 +125,13 @@ class QMPCApp(QObject):
         self.menuwindows.addAction("Preferences", self.showPrefs)
         self.setActionsEnabled(False)
 
-        if not HAVE_MAEMO:
+        if not have_maemo:
             self.menufile.addSeparator()
             self.menufile.addAction("&Quit", QApplication.quit)
 
 
     def showWidget(self,widget):
-        if HAVE_MAEMO:
+        if have_maemo:
             widget.show()
         else:
             self.stack.setCurrentWidget(widget)
@@ -201,8 +195,10 @@ class QMPCApp(QObject):
         self.mpd.disconnect()
         
     def showStats(self):
-        try:    stats = self.mpd.stats()
-        except: return
+        try:
+            stats = self.mpd.stats()
+        except:
+            return
         d = QDialog(self.appwid)
         d.setWindowTitle("Statistics")
         layout = QGridLayout()

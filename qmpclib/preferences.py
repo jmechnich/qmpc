@@ -1,9 +1,14 @@
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui  import QDialog, QCheckBox, QHBoxLayout, QVBoxLayout, \
     QDialogButtonBox, QAbstractItemView, QItemSelectionModel, QGridLayout, \
-    QLineEdit, QStandardItem
+    QLineEdit, QStandardItem, QListView, QLabel
 
-from widgetwrapper import *
+from platformhelper import have_maemo
+
+if have_maemo:
+    from widgets_maemo import *
+else:
+    from widgets_default import *
 
 class AddServerDialog(QDialog):
     def __init__(self,parent=None,name="",address="",port=6600):
