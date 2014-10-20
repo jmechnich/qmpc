@@ -12,7 +12,7 @@ setup(
     url="https://github.com/jmechnich/qmpc",
     download_url="https://github.com/jmechnich/qmpc/releases",
     packages=["qmpclib"],
-    data_files=[("share/qmpc/images", ["data/background.png"]),
+    data_files=[("share/qmpc/images", ["images/background.png"]),
                 ("share/applications/hildon", ["data/qmpc.desktop"]),
                 ("share/icons/hicolor/64x64/apps", ["data/qmpc.png"]),
             ],

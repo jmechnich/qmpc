@@ -1,5 +1,6 @@
-from PyQt4.QtCore import QObject, QTimer, pyqtSignal
-from PyQt4.QtGui  import QMenuBar, QMainWindow, QStackedWidget, QAction, QApplication, QDialog, QGridLayout, QLabel
+from PyQt4.QtCore import Qt, QObject, QTimer, pyqtSignal
+from PyQt4.QtGui  import QMenuBar, QMainWindow, QStackedWidget, QAction, \
+    QApplication, QDialog, QGridLayout, QLabel
 
 from qmpclib.startscreen   import StartScreen
 from qmpclib.player        import Player
@@ -65,6 +66,7 @@ class QMPCApp(QObject):
         self.data.loadSettings()
         self.imagehelper = ImageHelper(images=self.__images__,
                                        icons=self.__icons__)
+        QApplication.instance().aboutToQuit.connect(self.data.saveSettings)
 
     def initGUI(self):
         # create subwidgets
@@ -72,19 +74,39 @@ class QMPCApp(QObject):
         self.player      = Player(self)
         self.playlist    = Playlist(self)
         self.browser     = Browser(self)
+
+        # create actions
+        self.actionPlayer = QAction("Player", self)
+        self.actionPlayer.triggered.connect(
+            lambda: self.showWidget(self.player))
+        self.actionPlaylist = QAction("Playlist",self)
+        self.actionPlaylist.triggered.connect(
+            lambda: self.showWidget(self.playlist))
+        self.actionBrowser = QAction("Browser",self)
+        self.actionBrowser.triggered.connect(
+            lambda: self.showWidget(self.browser))
+        self.actionStats = QAction("Statistics",self)
+        self.actionStats.triggered.connect(self.showStats)
+        self.actionConnect = QAction("Connect",self)
+        self.actionConnect.triggered.connect(self.connectActivated)
         
         self.menu = None
         self.menufile = None
         self.menuwindows = None
         if HAVE_MAEMO:
+            self.player.setParent(self.startscreen)
             self.playlist.setParent(self.player)
             self.browser.setParent(self.player)
             for w in [ self.startscreen, self.player, self.playlist, self.browser ]:
                 w.setAttribute( Qt.WA_Maemo5StackedWindow)
                 w.setWindowFlags( w.windowFlags() | Qt.Window)
-            self.menu = QMenuBar()
+            self.menu = QMenuBar(self.startscreen)
             self.menufile = self.menu
             self.menuwindows = self.menu
+            playerMenu = QMenuBar(self.player)
+            playerMenu.addAction(self.actionPlaylist)
+            playerMenu.addAction(self.actionBrowser)
+            self.startscreen.show()
         else:
             mw = QMainWindow()
             self.stack = QStackedWidget()
@@ -99,20 +121,10 @@ class QMPCApp(QObject):
             self.appwid = mw
        
         # create all menu bars
-        self.actionPlayer = QAction("Player", self.menu)
-        self.actionPlayer.triggered.connect(lambda: self.showWidget(self.player))
         self.menuwindows.addAction(self.actionPlayer)
-        self.actionPlaylist = QAction("Playlist",self.menu)
-        self.actionPlaylist.triggered.connect(lambda: self.showWidget(self.playlist))
         self.menuwindows.addAction(self.actionPlaylist)
-        self.actionBrowser = QAction("Browser",self.menu)
-        self.actionBrowser.triggered.connect(lambda: self.showWidget(self.browser))
         self.menuwindows.addAction(self.actionBrowser)
-        self.actionStats = QAction("Statistics",self.menu)
-        self.actionStats.triggered.connect(self.showStats)
         self.menuwindows.addAction(self.actionStats)
-        self.actionConnect = QAction("Connect",self.menu)
-        self.actionConnect.triggered.connect(self.connectActivated)
         self.menufile.addAction(self.actionConnect)
         self.menuwindows.addAction("Preferences", self.showPrefs)
         self.setActionsEnabled(False)
@@ -121,9 +133,6 @@ class QMPCApp(QObject):
             self.menufile.addSeparator()
             self.menufile.addAction("&Quit", QApplication.quit)
 
-        #playerMenu = QMenuBar(self.player)
-        #playerMenu.addAction(self.actionPlaylist)
-        #playerMenu.addAction(self.actionBrowser)
 
     def showWidget(self,widget):
         if HAVE_MAEMO:
@@ -226,10 +235,6 @@ class QMPCApp(QObject):
     def showPrefs(self):
         s = Prefs(self.data, self.appwid)
         s.exec_()
-
-    def closeEvent(self,e):
-        self.data.saveSettings()
-        e.accept()
 
     def timerEvent(self,e):
         try:

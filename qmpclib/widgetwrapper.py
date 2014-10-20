@@ -4,14 +4,14 @@ try:
     from PyQt4.QtMaemo5 import QMaemo5InformationBox
     
     class ValueButton(QMaemo5ValueButton):
-        def __init__(self,parent):
-            super(ValueButton,self).__init__()
+        def __init__(self,text):
+            super(ValueButton,self).__init__(text)
             self.setValueLayout(QMaemo5ValueButton.ValueUnderText)
             
     class InformationBox(object):
         @staticmethod
         def information(parent, message):
-            return QMaemo5InformationBox(
+            return QMaemo5InformationBox.information(
                 parent, message, QMaemo5InformationBox.DefaultTimeout)
 except:
     from PyQt4.QtGui import QMessageBox, QPushButton
@@ -35,7 +35,7 @@ except:
             pass
             
     class ValueButton(QPushButton):
-        def __init__(self, parent):
+        def __init__(self, text):
             super(ValueButton,self).__init__()
             
         def setPickSelector(self, sel):
