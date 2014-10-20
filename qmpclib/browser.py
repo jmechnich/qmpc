@@ -1,7 +1,7 @@
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui  import QWidget, QStandardItemModel, QApplication, \
     QVBoxLayout, QHBoxLayout, QToolButton, QLabel, QListView, \
-    QAbstractItemView, QAction, QStandardItem
+    QAbstractItemView, QAction, QStandardItem, QMenu
 
 from mpd  import MPDError
 from util import ClickableLabel
@@ -227,7 +227,8 @@ class Browser(QWidget):
         self.showDirectory("")
 
     def showPlaylist(self,uri):
-        try:    info = self.mpd.listplaylistinfo(uri)
+        try:
+            info = self.mpd.listplaylistinfo(uri)
         except MPDError, e:
             print e
             return
