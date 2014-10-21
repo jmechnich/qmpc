@@ -261,3 +261,10 @@ class Player(QWidget):
                 
     def reset(self):
         self.hide()
+    
+    def mousePressEvent(self,ev):
+        if self.volumeBtn.isChecked():
+            self.volumeBtn.setChecked(False)
+            ev.accept()
+        else:
+            super(Player,self).mousePressEvent(ev)

@@ -165,6 +165,7 @@ class QMPCApp(QObject):
                     InformationBox.information(
                         self.appwid, "Connecting to <b>%s</b>" % name)
                     QApplication.processEvents()
+                self.mpd.timeout = 10
                 self.mpd.connect( str(address), int(port))
                 if not reconnect:
                     InformationBox.information(
@@ -173,6 +174,11 @@ class QMPCApp(QObject):
                     self.setActionsEnabled(True)
                     self.showWidget(self.player)
                 self.mpdtimer = self.startTimer(5000)
+            except socket.timeout, e:
+                self.setActionsEnabled(False)
+                self.showWidget(self.startscreen)
+                InformationBox.information( self.appwid, "%s: %s" %(name,e))
+                QApplication.processEvents()
             except socket.gaierror, e:
                 self.setActionsEnabled(False)
                 self.showWidget(self.startscreen)
