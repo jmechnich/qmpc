@@ -17,6 +17,31 @@ Requirements
 - Python 2.5
 - PyQt 4.x
 
+Installation
+============
+
+```
+# install dependencies
+sudo gainroot
+# install pyqt
+apt-get install python-qt4
+# install git for downloading qmpc source code
+apt-get install git
+exit
+
+# download and build python-mpd2
+git clone https://github.com/jmechnich/python-mpd2
+(cd python-mpd2 && python setup.py build)
+# download and build qmpc
+git clone https://github.com/jmechnich/qmpc
+(cd qmpc && python setup.py build)
+
+# install everything
+sudo gainroot
+(cd python-mpd2 && python setup.py install)
+(cd qmpc && python setup.py install)
+```
+
 Screenshots
 ===========
 
