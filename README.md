@@ -20,6 +20,8 @@ Requirements
 Installation
 ============
 
+Open a terminal and execute the following commands:
+
 ```
 # install dependencies
 sudo gainroot
@@ -40,7 +42,10 @@ git clone https://github.com/jmechnich/qmpc
 sudo gainroot
 (cd python-mpd2 && python setup.py install)
 (cd qmpc && python setup.py install)
+exit
 ```
+
+qmpc should show up in the application menu now.
 
 Screenshots
 ===========
