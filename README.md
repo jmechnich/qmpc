@@ -41,7 +41,7 @@ git clone https://github.com/jmechnich/qmpc
 # install everything
 sudo gainroot
 (cd python-mpd2 && python setup.py install)
-(cd qmpc && python setup.py install)
+(cd qmpc && ./install.sh)
 exit
 ```
 
