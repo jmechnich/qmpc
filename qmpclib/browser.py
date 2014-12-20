@@ -70,6 +70,7 @@ class Browser(QWidget):
         self.actionReplace     = QAction("Replace", self)
         self.actionReplacePlay = QAction("Replace and Play", self)
         self.actionUpdate      = QAction("Update", self)
+        self.actionUpdateAll   = QAction("Update all", self)
         # playlist actions
         self.actionPlsRename   = QAction("Rename", self)
         self.actionPlsDelete   = QAction("Delete", self)
@@ -101,6 +102,7 @@ class Browser(QWidget):
             popup.addAction(self.actionPlsDelete)
         else:
             popup.addAction(self.actionUpdate)
+        popup.addAction(self.actionUpdateAll)
         action = popup.exec_(self.mapToGlobal(pos))
         
         status = self.mpd.status()
@@ -125,6 +127,8 @@ class Browser(QWidget):
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if ans == QMessageBox.Yes:
                 self.mpd.update(uri)
+        elif action == self.actionUpdateAll:
+            self.mpd.update()
         elif action == self.actionPlsRename:
             ans, ok = QInputDialog.getText(
                 self, "Rename playlist", "Rename playlist '%s':" % uri)
