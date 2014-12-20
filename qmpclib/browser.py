@@ -223,11 +223,17 @@ class Browser(QWidget):
     def back(self):
         uri = unicode(self.currentLocation.text())
         pos = uri.rfind('/')
+        fromd = None
         if pos != -1:
+            fromd = uri[pos+1:]
             uri = uri[:pos]
         elif len(uri):
             uri = ''
         self.showDirectory(uri)
+        if fromd != None:
+            items = self.model.findItems(fromd)
+            if len(items) > 0:
+                self.view.scrollTo(items[0].index())
 
     def home(self):
         self.showDirectory("")
