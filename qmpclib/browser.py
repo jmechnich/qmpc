@@ -70,6 +70,7 @@ class Browser(QWidget):
         self.actionReplace     = QAction("Replace", self)
         self.actionReplacePlay = QAction("Replace and Play", self)
         self.actionUpdate      = QAction("Update", self)
+        self.actionUpdateAll   = QAction("Update all", self)
         # playlist actions
         self.actionPlsRename   = QAction("Rename", self)
         self.actionPlsDelete   = QAction("Delete", self)
@@ -101,6 +102,7 @@ class Browser(QWidget):
             popup.addAction(self.actionPlsDelete)
         else:
             popup.addAction(self.actionUpdate)
+        popup.addAction(self.actionUpdateAll)
         action = popup.exec_(self.mapToGlobal(pos))
         
         status = self.mpd.status()
@@ -125,6 +127,8 @@ class Browser(QWidget):
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if ans == QMessageBox.Yes:
                 self.mpd.update(uri)
+        elif action == self.actionUpdateAll:
+            self.mpd.update()
         elif action == self.actionPlsRename:
             ans, ok = QInputDialog.getText(
                 self, "Rename playlist", "Rename playlist '%s':" % uri)
@@ -219,11 +223,17 @@ class Browser(QWidget):
     def back(self):
         uri = unicode(self.currentLocation.text())
         pos = uri.rfind('/')
+        fromd = None
         if pos != -1:
+            fromd = uri[pos+1:]
             uri = uri[:pos]
         elif len(uri):
             uri = ''
         self.showDirectory(uri)
+        if fromd != None:
+            items = self.model.findItems(fromd)
+            if len(items) > 0:
+                self.view.scrollTo(items[0].index())
 
     def home(self):
         self.showDirectory("")
