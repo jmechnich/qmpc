@@ -52,10 +52,15 @@ class MPDWrapper(MPDClient):
                 ret['year'] = info['date']
         ret['track']  = '-'
         if info.has_key('track'):
-            pos = info['track'].find("/")
-            if pos != -1:
-                ret['track'] = info['track'][:pos]
-            else:
-                ret['track'] = info['track']
+            track_info = info['track']
+            if type(track_info) == type(str()):
+                pos = track_info.find("/")
+                if pos != -1:
+                    ret['track'] = track_info[:pos]
+                else:
+                    ret['track'] = track_info
+            elif type(track_info) == type(list()) and \
+            len(track_info) > 0:
+                ret['track'] = track_info[0]
         ret['id'] = info['id']
         return ret
