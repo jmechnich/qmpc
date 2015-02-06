@@ -44,9 +44,10 @@ class QMPCApp(QObject):
 
     def __init__(self):
         super(QMPCApp,self).__init__()
-        self.appwid = None
+        self.mw = None
         self.initData()
         self.initMPD()
+        self.initActions()
         self.initGUI()
         QTimer.singleShot(100,self.deferredStart)
 
@@ -54,25 +55,14 @@ class QMPCApp(QObject):
         if self.data.autoconnect: self.connectMPD()
 
     def initData(self):
+        self.selectedServerName = None
         self.data = DataModel()
         self.data.loadSettings()
         self.imagehelper = ImageHelper(images=self.__images__,
                                        icons=self.__icons__)
         QApplication.instance().aboutToQuit.connect(self.data.saveSettings)
 
-    def initGUI(self):
-        # create subwidgets
-        self.startscreen = StartScreen(self)
-        self.player      = Player(self)
-        self.playlist    = Playlist(self)
-        self.browser     = Browser(self)
-
-        self.startscreen.clicked.connect(self.connectActivated)
-
-        # create actions
-        self.actionStart = QAction("Start Screen", self)
-        self.actionStart.triggered.connect(
-            lambda: self.showWidget(self.startscreen))
+    def initActions(self):
         self.actionPlayer = QAction("Player", self)
         self.actionPlayer.triggered.connect(
             lambda: self.showWidget(self.player))
@@ -82,64 +72,94 @@ class QMPCApp(QObject):
         self.actionBrowser = QAction("Browser",self)
         self.actionBrowser.triggered.connect(
             lambda: self.showWidget(self.browser))
+
         self.actionStats = QAction("Statistics",self)
         self.actionStats.triggered.connect(self.showStats)
+        self.actionPrefs = QAction("Preferences",self)
+        self.actionPrefs.triggered.connect(self.showPrefs)
         self.actionConnect = QAction("Connect",self)
         self.actionConnect.triggered.connect(self.connectActivated)
+
+    def initGUI(self):
+        self.initStartScreen()
+        self.initWidgets()
         
-        self.menu = None
-        self.menufile = None
-        self.menuwindows = None
-        
+        if not have_maemo:
+            self.mw     = QMainWindow()
+            menu        = self.mw.menuBar()
+            menufile    = menu.addMenu("&File")
+            menuwindows = menu.addMenu("&Windows")
+            self.mw.statusBar()
+            menuwindows.addAction(self.actionPlayer)
+            menuwindows.addAction(self.actionPlaylist)
+            menuwindows.addAction(self.actionBrowser)
+            menuwindows.addAction(self.actionStats)
+            menufile.addAction(self.actionConnect)
+            menufile.addAction(self.actionPrefs)
+            menufile.addSeparator()
+            menufile.addAction("&Quit", QApplication.quit)
+       
+        self.setConnectionState(False)
+
+    def initStartScreen(self):
+        self.startscreen = StartScreen(self)
+        self.startscreen.clicked.connect(self.connectActivated)
         if have_maemo:
-            self.player.setParent(self.startscreen)
+            menu = QMenuBar(self.startscreen)
+            menu.addAction(self.actionConnect)
+            menu.addAction(self.actionPrefs)
+            
+    def initWidgets(self):
+        # create subwidgets
+        self.player   = Player(self)
+        self.playlist = Playlist(self)
+        self.browser  = Browser(self)
+        if have_maemo:
+            # build Maemo stack hierarchy
             self.playlist.setParent(self.player)
             self.browser.setParent(self.player)
-            for w in [ self.startscreen, self.player, self.playlist, self.browser ]:
+            for w in [ self.player, self.playlist, self.browser ]:
                 w.setAttribute( Qt.WA_Maemo5StackedWindow)
                 w.setWindowFlags( w.windowFlags() | Qt.Window)
-            self.menu = QMenuBar(self.startscreen)
-            self.menufile = self.menu
-            self.menuwindows = self.menu
-            playerMenu = QMenuBar(self.player)
-            playerMenu.addAction(self.actionPlaylist)
-            playerMenu.addAction(self.actionBrowser)
-            self.startscreen.show()
+
+            # add menu bar
+            menu = QMenuBar(self.player)
+            menu.addAction(self.actionPlaylist)
+            menu.addAction(self.actionBrowser)
+            menu.addAction(self.actionStats)
+            menu.addAction(self.actionPrefs)
+            menu.addAction(self.actionConnect)
         else:
-            mw = QMainWindow()
             self.stack = QStackedWidget()
-            mw.setCentralWidget(self.stack)
-            for w in [ self.startscreen, self.player, self.playlist, self.browser ]:
+            for w in [ self.player, self.playlist, self.browser ]:
                 w.setParent(self.stack)
                 self.stack.addWidget(w)
-            self.menu = mw.menuBar()
-            self.menufile = self.menu.addMenu("&File")
-            self.menuwindows = self.menu.addMenu("&Windows")
-            mw.statusBar()
-            mw.show()
-            mw.setFixedSize(mw.sizeHint())
-            self.appwid = mw
-       
-        # create all menu bars
-        if not have_maemo:
-            self.menuwindows.addAction(self.actionStart)
-        self.menuwindows.addAction(self.actionPlayer)
-        self.menuwindows.addAction(self.actionPlaylist)
-        self.menuwindows.addAction(self.actionBrowser)
-        self.menuwindows.addAction(self.actionStats)
-        self.menufile.addAction(self.actionConnect)
-        self.menuwindows.addAction("Preferences", self.showPrefs)
-        self.setActionsEnabled(False)
-        if not have_maemo:
-            self.menufile.addSeparator()
-            self.menufile.addAction("&Quit", QApplication.quit)
 
+    def switchView(self, connected):
+        if have_maemo:
+            if connected:
+                self.player.show()
+                self.startscreen.hide()
+            else:
+                self.startscreen.show()
+        else:
+            cw = self.mw.centralWidget()
+            if cw:
+                cw.setParent(None)
+                cw.hide()
+            if connected:
+                self.mw.setCentralWidget(self.stack)
+                self.stack.show()
+                self.showWidget(self.player)
+            else:
+                self.mw.setCentralWidget(self.startscreen)
+                self.startscreen.show()
+            self.mw.show()
 
     def showWidget(self,widget):
-        if have_maemo:
-            widget.show()
-        else:
+        if not have_maemo:
             self.stack.setCurrentWidget(widget)
+        widget.show()
 
     def connectActivated(self):
         if self.actionConnect.text() == "Connect":
@@ -154,7 +174,7 @@ class QMPCApp(QObject):
     def connectMPD(self,reconnect=False):
         selected = self.data.selectedServer()
         if not len(selected):
-            InformationBox.information( self.appwid, "Select server to connect")
+            InformationBox.information( self.mw, "Select server to connect")
             self.showPrefs()
 
         selected = self.data.selectedServer()
@@ -163,43 +183,40 @@ class QMPCApp(QObject):
             try:
                 if not reconnect:
                     InformationBox.information(
-                        self.appwid, "Connecting to <b>%s</b>" % name)
+                        self.mw, "Connecting to <b>%s</b>" % name)
                     QApplication.processEvents()
                 self.mpd.timeout = 10
                 self.mpd.connect( str(address), int(port))
                 if not reconnect:
                     InformationBox.information(
-                        self.appwid, "Connected to <b>%s</b>" % name)
+                        self.mw, "Connected to <b>%s</b>" % name)
                     QApplication.processEvents()
-                    self.setActionsEnabled(True)
-                    self.showWidget(self.player)
+                    self.setConnectionState(True)
+                    self.selectedServerName = name
                 self.mpdtimer = self.startTimer(5000)
             except socket.timeout, e:
-                self.setActionsEnabled(False)
-                self.showWidget(self.startscreen)
-                InformationBox.information( self.appwid, "%s: %s" %(name,e))
+                self.setConnectionState(False)
+                InformationBox.information( self.mw, "%s: %s" %(name,e))
                 QApplication.processEvents()
             except socket.gaierror, e:
-                self.setActionsEnabled(False)
-                self.showWidget(self.startscreen)
-                InformationBox.information( self.appwid, "%s: %s" %(name,e[1]))
+                self.setConnectionState(False)
+                InformationBox.information( self.mw, "%s: %s" %(name,e[1]))
                 QApplication.processEvents()
             except socket.error, e:
-                self.setActionsEnabled(False)
-                self.showWidget(self.startscreen)
-                InformationBox.information( self.appwid, "%s: %s" %(name,e[1]))
+                self.setConnectionState(False)
+                InformationBox.information( self.mw, "%s: %s" %(name,e[1]))
                 QApplication.processEvents()
 
     def disconnectMPD(self, reconnect=False):
         self.killTimer(self.mpdtimer)
         if not reconnect:
             message = "Disconnected"
-            selected = self.data.selectedServer()
-            if len(selected): message += (" from <b>%s</b>" % selected[0])
-            InformationBox.information(self.appwid, message)
+            if self.selectedServerName:
+                message += (" from <b>%s</b>" % self.selectedServerName)
+            self.selectedName = None
+            self.setConnectionState(False)
+            InformationBox.information(self.mw, message)
             QApplication.processEvents()
-            self.setActionsEnabled(False)
-            self.showWidget(self.startscreen)
             self.player.reset()
             self.browser.reset()
             self.playlist.reset()
@@ -210,7 +227,7 @@ class QMPCApp(QObject):
             stats = self.mpd.stats()
         except:
             return
-        d = QDialog(self.appwid)
+        d = QDialog(self.mw)
         d.setWindowTitle("Statistics")
         layout = QGridLayout()
         layout.addWidget(QLabel("Artists:"),0,0)
@@ -228,7 +245,7 @@ class QMPCApp(QObject):
         d.setLayout(layout)
         d.exec_()
 
-    def setActionsEnabled(self,state):
+    def setConnectionState(self,state):
         self.actionPlayer.setEnabled(state)
         self.actionPlaylist.setEnabled(state)
         self.actionBrowser.setEnabled(state)
@@ -238,11 +255,14 @@ class QMPCApp(QObject):
             selected = self.data.selectedServer()
             if not len(selected): return
             self.actionConnect.setText("Disconnect")
+            self.switchView(True)
+            self.showWidget(self.player)
         else:
             self.actionConnect.setText("Connect")
-    
+            self.switchView(False)
+            
     def showPrefs(self):
-        s = Prefs(self.data, self.appwid)
+        s = Prefs(self.data, self.mw)
         s.exec_()
 
     def timerEvent(self,e):
