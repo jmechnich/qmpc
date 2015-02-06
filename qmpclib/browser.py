@@ -5,6 +5,7 @@ from PyQt4.QtGui  import QWidget, QStandardItemModel, QApplication, \
 
 from mpd  import MPDError
 from util import ClickableLabel
+import operator
 
 class Browser(QWidget):
     entrytype = type("EntryType", (object,), dict((v,k) for k,v in enumerate(
@@ -162,7 +163,12 @@ class Browser(QWidget):
             print e
             return
         rows = []
-        for entry in info:
+        for entry in [ d for d in info if not d.has_key('playlist')]:
+            row = self.createRow(entry)
+            if not row: continue
+            rows += [row]
+        for entry in sorted([ d for d in info if d.has_key('playlist')],
+                            key=operator.itemgetter('playlist')):
             row = self.createRow(entry)
             if not row: continue
             rows += [row]
