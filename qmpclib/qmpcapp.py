@@ -1,6 +1,6 @@
 from PyQt4.QtCore import Qt, QObject, QTimer
 from PyQt4.QtGui  import QMenuBar, QMainWindow, QStackedWidget, QAction, \
-    QApplication, QDialog, QGridLayout, QLabel
+    QApplication, QDialog, QGridLayout, QLabel, QVBoxLayout, QCheckBox
 
 from startscreen   import StartScreen
 from player        import Player
@@ -73,6 +73,8 @@ class QMPCApp(QObject):
         self.actionBrowser.triggered.connect(
             lambda: self.showWidget(self.browser))
 
+        self.actionOutputs = QAction("Outputs",self)
+        self.actionOutputs.triggered.connect(self.showOutputs)
         self.actionStats = QAction("Statistics",self)
         self.actionStats.triggered.connect(self.showStats)
         self.actionPrefs = QAction("Preferences",self)
@@ -93,6 +95,7 @@ class QMPCApp(QObject):
             menuwindows.addAction(self.actionPlayer)
             menuwindows.addAction(self.actionPlaylist)
             menuwindows.addAction(self.actionBrowser)
+            menuwindows.addAction(self.actionOutputs)
             menuwindows.addAction(self.actionStats)
             menufile.addAction(self.actionConnect)
             menufile.addAction(self.actionPrefs)
@@ -127,6 +130,7 @@ class QMPCApp(QObject):
             menu.addAction(self.actionPlaylist)
             menu.addAction(self.actionBrowser)
             menu.addAction(self.actionStats)
+            menu.addAction(self.actionOutputs)
             menu.addAction(self.actionPrefs)
             menu.addAction(self.actionConnect)
         else:
@@ -221,6 +225,24 @@ class QMPCApp(QObject):
             self.browser.reset()
             self.playlist.reset()
         self.mpd.disconnect()
+
+    def showOutputs(self):
+        try:
+            outputs = self.mpd.outputs()
+        except:
+            return
+        d = QDialog(self.mw)
+        d.setWindowTitle("Outputs")
+        layout = QVBoxLayout()
+        for i,o in enumerate(outputs):
+            w = QCheckBox(o['outputname'])
+            w.setChecked(int(o['outputenabled']))
+            w.toggled.connect( lambda state, outputid=o['outputid']:
+                               self.mpd.enableoutput(outputid) if state else
+                               self.mpd.disableoutput(outputid))
+            layout.addWidget(w)
+        d.setLayout(layout)
+        d.exec_()
         
     def showStats(self):
         try:
@@ -249,6 +271,7 @@ class QMPCApp(QObject):
         self.actionPlayer.setEnabled(state)
         self.actionPlaylist.setEnabled(state)
         self.actionBrowser.setEnabled(state)
+        self.actionOutputs.setEnabled(state)
         self.actionStats.setEnabled(state)
         self.startscreen.updateLabel(state)
         if state:
